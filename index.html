@@ -3,37 +3,163 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Carlos Sell -- Customer Success Manager</title>
+    <title>Carlos Sell — Customer Success Manager</title>
     <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --text-color: #333;
+            --light-bg: #f8f9fa;
+        }
+        
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
             margin: 0;
             padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #f4f4f4;
+            background-color: var(--light-bg);
+            color: var(--text-color);
+            line-height: 1.6;
         }
-        .container {
+        
+        header {
+            background-color: var(--secondary-color);
+            color: white;
             text-align: center;
+            padding: 60px 0;
+        }
+        
+        .profile-name {
+            margin: 0;
+            font-size: 2.5rem;
+        }
+        
+        .profile-title {
+            margin: 5px 0 0;
+            font-weight: normal;
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        section {
+            margin-bottom: 50px;
+        }
+        
+        h2 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .projects {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .project-card {
             background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .project-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .project-content {
             padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
-        h1 {
-            color: #333;
+        
+        .project-title {
+            margin-top: 0;
+            color: var(--secondary-color);
         }
-        p {
+        
+        .project-description {
             color: #666;
+            margin-bottom: 15px;
+        }
+        
+        .btn {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+        }
+        
+        .btn:hover {
+            background-color: #2980b9;
+        }
+        
+        footer {
+            background-color: var(--secondary-color);
+            color: white;
+            text-align: center;
+            padding: 20px;
+            margin-top: 40px;
         }
     </style>
 </head>
 <body>
+    <header>
+        <h1 class="profile-name">Carlos Sell</h1>
+        <p class="profile-title">Customer Success Manager</p>
+    </header>
+    
     <div class="container">
-        <h1>Carlos Sell</h1>
-        <p>Customer Success Manager</p>
+        <section>
+            <h2>About Me</h2>
+            <p>
+                I'm a dedicated Customer Success Manager with expertise in building strong client relationships and ensuring maximum value delivery. I help businesses achieve their goals by providing strategic guidance and solutions tailored to their unique needs.
+            </p>
+        </section>
+
+        <section>
+            <h2>Projects</h2>
+            <div class="projects">
+                <div class="project-card">
+                    <div class="project-content">
+                        <h3 class="project-title">Client Success Strategy</h3>
+                        <p class="project-description">Developed and implemented a comprehensive customer success framework that increased retention by 25%.</p>
+                        <a href="#" class="btn">Learn More</a>
+                    </div>
+                </div>
+                
+                <div class="project-card">
+                    <div class="project-content">
+                        <h3 class="project-title">Onboarding Optimization</h3>
+                        <p class="project-description">Redesigned client onboarding process reducing time-to-value by 40% and improving customer satisfaction scores.</p>
+                        <a href="#" class="btn">Learn More</a>
+                    </div>
+                </div>
+                
+                <div class="project-card">
+                    <div class="project-content">
+                        <h3 class="project-title">Customer Advocacy Program</h3>
+                        <p class="project-description">Created and launched a customer advocacy initiative resulting in a 3x increase in referral business.</p>
+                        <a href="#" class="btn">Learn More</a>
+                    </div>
+                </div>
+            </div>
+        </section>
     </div>
+
+    <footer>
+        <p>&copy; 2023 Carlos Sell. All rights reserved.</p>
+    </footer>
 </body>
 </html>
