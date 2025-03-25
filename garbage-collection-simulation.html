@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Animated Car Route</title>
+    <style>
+        body { margin: 0; padding: 0; }
+        #map { height: 100vh; width: 100%; }
+        #info-box {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 99;
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        }
+        .controls {
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        button {
+            padding: 5px;
+            cursor: pointer;
+            background: #4285F4;
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
+        button:hover {
+            background: #3367D6;
+        }
+        #speed-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        input[type="range"] {
+            width: 100px;
+        }
+        #status {
+            margin-top: 10px;
+            font-style: italic;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <div id="info-box">
+        <div><strong>From:</strong> Santa Ana, Costa Rica</div>
+        <div><strong>To:</strong> Escazu, Costa Rica</div>
+        <div id="distance"></div>
+        <div id="duration"></div>
+        <div id="current-speed"></div>
+        <div class="controls">
+            <button id="start-animation">Start Animation</button>
+            <button id="reset-animation">Reset</button>
+            <div id="speed-control">
+                <label for="speed">Speed:</label>
+                <input type="range" id="speed" min="1" max="100" value="50" />
+                <span id="speed-value">50</span>
+            </div>
+            <div id="status"></div>
+        </div>
+    </div>
+    
+    <!-- Load Google Maps API first -->
+    <script>
+        // Wait for the page to load before loading Google Maps API
+        window.onload = function() {
+            // Create and load Google Maps API script
+            const script = document.createElement('script');
+            script.src = "https://maps.googleapis.com/maps/api/js?key=AIzaSyBKBqRMq_c5jX-9uhQ3g7XgcMayoq-nJho&libraries=geometry&callback=initMap";
+            script.async = true;
+            script.defer = true;
+            document.head.appendChild(script);
+            
+            // Show loading status
+            document.getElementById('status').textContent = 'Loading map...';
+        };
+    </script>
+    
+    <!-- Application code -->
+    <script>
+        // Route path
+        const routePath = [[9.93124, -84.18204], [9.9312, -84.18161], [9.93113, -84.18117], [9.9311, -84.18067], [9.93104, -84.18028], [9.93101, -84.17973], [9.93092, -84.17885], [9.93056, -84.17554], [9.93052, -84.1754], [9.93017, -84.17486], [9.92943, -84.17393], [9.92924, -84.17375], [9.92902, -84.17365], [9.92809, -84.17353], [9.9279, -84.17344], [9.9278, -84.17335], [9.92777, -84.17319], [9.92776, -84.17289], [9.92786, -84.17197], [9.92792, -84.17183], [9.92803, -84.17171], [9.92854, -84.17159], [9.92911, -84.17157], [9.92934, -84.17161], [9.9296, -84.1717], [9.93013, -84.17192], [9.93026, -84.17194], [9.93084, -84.17198], [9.931, -84.17205], [9.93136, -84.17236], [9.93142, -84.17239], [9.93154, -84.17241], [9.93168, -84.17237], [9.93181, -84.17225], [9.93189, -84.17209], [9.9319, -84.17204], [9.93189, -84.17191], [9.93176, -84.17157], [9.93172, -84.17148], [9.9317, -84.17137], [9.93178, -84.17107], [9.93191, -84.1708], [9.93193, -84.17066], [9.93191, -84.17049], [9.93172, -84.17004], [9.93162, -84.16976], [9.93155, -84.1693], [9.93177, -84.16906], [9.93204, -84.1688], [9.9323, -84.16862], [9.93241, -84.16851], [9.93245, -84.16842], [9.93271, -84.16749], [9.93286, -84.16708], [9.93311, -84.16658], [9.93384, -84.16525], [9.93396, -84.16496], [9.934, -84.16449], [9.93398, -84.16422], [9.93398, -84.16404], [9.93403, -84.16389], [9.93408, -84.16382], [9.93428, -84.16369], [9.93457, -84.16354], [9.93471, -84.16346], [9.93485, -84.16328], [9.93517, -84.16278], [9.9353, -84.16249], [9.93534, -84.16228], [9.93535, -84.16212], [9.93532, -84.16197], [9.93523, -84.16166], [9.93501, -84.16047], [9.93472, -84.15796], [9.93464, -84.15708], [9.93446, -84.15588], [9.93412, -84.15446], [9.93407, -84.15433], [9.93373, -84.15359], [9.93352, -84.15323], [9.93324, -84.15288], [9.93306, -84.15268], [9.93262, -84.15229], [9.93117, -84.15122], [9.93091, -84.15098], [9.93086, -84.1509], [9.92984, -84.15029], [9.92939, -84.15013], [9.92924, -84.15005], [9.92916, -84.14995], [9.92857, -84.14887], [9.9283, -84.14842], [9.9281, -84.14819], [9.92797, -84.14797], [9.92776, -84.14747], [9.92768, -84.14732], [9.92729, -84.14682], [9.9267, -84.1463], [9.9264, -84.14607], [9.926, -84.14587], [9.92563, -84.14572], [9.92549, -84.14559], [9.92528, -84.14536], [9.92505, -84.14519], [9.92494, -84.14509], [9.92402, -84.14509], [9.92332, -84.14519], [9.9229, -84.14531], [9.92271, -84.14534], [9.92207, -84.14558], [9.92187, -84.14561], [9.92155, -84.14548], [9.92062, -84.14486], [9.92064, -84.1442], [9.92053, -84.14326], [9.92031, -84.14011], [9.92025, -84.13908]];
+        
+        // Global variables
+        let map, carMarker, routePolyline;
+        let animationId = null;
+        let currentStep = 0;
+        let animationSpeed = 50;
+        let isMapInitialized = false;
+        
+        // Car icon definition - will be created when Google Maps API is loaded
+        let carIcon = null;
+
+        // Initialize the map when Google Maps API loads
+        function initMap() {
+            try {
+                // Update status
+                document.getElementById('status').textContent = 'Initializing map...';
+                
+                // Create car icon object now that Google API is loaded
+                carIcon = {
+                    path: 'M29.395,0H17.636c-3.117,0-5.643,3.467-5.643,6.584v34.804c0,3.116,2.526,5.644,5.643,5.644h11.759c3.116,0,5.644-2.527,5.644-5.644V6.584C35.037,3.467,32.511,0,29.395,0z M34.05,14.188v11.665l-2.729,0.351v-4.806L34.05,14.188z M32.618,10.773c-1.016,3.9-2.219,8.51-2.219,8.51H16.631l-2.222-8.51C14.41,10.773,23.293,7.755,32.618,10.773z M15.741,21.713v4.492l-2.73-0.349V14.502L15.741,21.713z M13.011,37.938V27.579l2.73,0.343v8.196L13.011,37.938z M14.568,40.882l2.218-3.336h13.771l2.219,3.336H14.568z M31.321,35.805v-7.872l2.729-0.355v10.048L31.321,35.805z',
+                    fillColor: '#4285F4',
+                    fillOpacity: 1,
+                    scale: 0.4,
+                    strokeColor: '#000000',
+                    strokeWeight: 1,
+                    anchor: new google.maps.Point(26, 20),
+                    rotation: 0
+                };
+                
+                // Create map
+                map = new google.maps.Map(document.getElementById('map'), {
+                    zoom: 13,
+                    center: { lat: 9.9312697, lng: -84.1820735 }
+                });
+                
+                // Create start and end markers
+                const startMarker = new google.maps.Marker({
+                    position: { lat: 9.9312697, lng: -84.1820735 },
+                    map: map,
+                    title: 'Santa Ana, Costa Rica',
+                    icon: 'http://maps.google.com/mapfiles/ms/icons/green-dot.png'
+                });
+                
+                const endMarker = new google.maps.Marker({
+                    position: { lat: 9.9202446, lng: -84.1390855 },
+                    map: map,
+                    title: 'Escazu, Costa Rica',
+                    icon: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png'
+                });
+                
+                // Create car marker (initially at start point)
+                carMarker = new google.maps.Marker({
+                    position: { lat: routePath[0][0], lng: routePath[0][1] },
+                    map: map,
+                    icon: carIcon,
+                    title: 'Car',
+                    zIndex: 100
+                });
+                
+                // Create the polyline for the route
+                routePolyline = new google.maps.Polyline({
+                    path: routePath.map(coords => ({ lat: coords[0], lng: coords[1] })),
+                    geodesic: true,
+                    strokeColor: '#4285F4',
+                    strokeOpacity: 1.0,
+                    strokeWeight: 4
+                });
+                routePolyline.setMap(map);
+                
+                // Calculate route info
+                const distanceInKm = calculateRouteDistance(routePath) / 1000;
+                document.getElementById('distance').innerHTML = `<strong>Distance:</strong> ${distanceInKm.toFixed(1)} km`;
+                
+                // Calculate approximate duration based on route length and average speed
+                const avgSpeedKmh = 45; // assumed average speed in km/h
+                const estDurationMin = (distanceInKm / avgSpeedKmh) * 60;
+                document.getElementById('duration').innerHTML = `<strong>Est. Duration:</strong> ${estDurationMin.toFixed(0)} min`;
+                document.getElementById('current-speed').innerHTML = `<strong>Animation Speed:</strong> ${animationSpeed}`;
+                
+                // Set up event listeners now that everything is initialized
+                document.getElementById('start-animation').addEventListener('click', toggleAnimation);
+                document.getElementById('reset-animation').addEventListener('click', resetAnimation);
+                document.getElementById('speed').addEventListener('input', changeSpeed);
+                
+                // Mark map as initialized
+                isMapInitialized = true;
+                
+                // Update status
+                document.getElementById('status').textContent = 'Map ready. Click "Start Animation" to begin.';
+                
+            } catch (error) {
+                console.error('Error initializing map:', error);
+                document.getElementById('status').textContent = 'Error initializing map: ' + error.message;
+            }
+        }
+            
+        // Calculate the total distance of the route
+        function calculateRouteDistance(path) {
+            try {
+                let totalDistance = 0;
+                for (let i = 0; i < path.length - 1; i++) {
+                    const p1 = new google.maps.LatLng(path[i][0], path[i][1]);
+                    const p2 = new google.maps.LatLng(path[i+1][0], path[i+1][1]);
+                    totalDistance += google.maps.geometry.spherical.computeDistanceBetween(p1, p2);
+                }
+                return totalDistance;
+            } catch (error) {
+                console.error('Error calculating route distance:', error);
+                return 0;
+            }
+        }
+            
+        // Toggle the animation start/pause
+        function toggleAnimation() {
+            try {
+                if (!isMapInitialized) {
+                    document.getElementById('status').textContent = 'Map not ready yet. Please wait...';
+                    return;
+                }
+                
+                const button = document.getElementById('start-animation');
+                if (animationId) {
+                    // Pause animation
+                    cancelAnimationFrame(animationId);
+                    animationId = null;
+                    button.textContent = 'Resume Animation';
+                    document.getElementById('status').textContent = 'Animation paused';
+                } else {
+                    // Start animation
+                    button.textContent = 'Pause Animation';
+                    document.getElementById('status').textContent = 'Animation running...';
+                    animateCar();
+                }
+            } catch (error) {
+                console.error('Error toggling animation:', error);
+                document.getElementById('status').textContent = 'Error toggling animation: ' + error.message;
+            }
+        }
+            
+        // Reset the animation to the beginning
+        function resetAnimation() {
+            try {
+                if (!isMapInitialized) {
+                    document.getElementById('status').textContent = 'Map not ready yet. Please wait...';
+                    return;
+                }
+                
+                if (animationId) {
+                    cancelAnimationFrame(animationId);
+                    animationId = null;
+                    document.getElementById('start-animation').textContent = 'Start Animation';
+                }
+                
+                currentStep = 0;
+                carMarker.setPosition({ lat: routePath[0][0], lng: routePath[0][1] });
+                
+                // Calculate heading for initial position
+                if (routePath.length > 1) {
+                    const heading = calculateHeading(
+                        routePath[0][0], routePath[0][1],
+                        routePath[1][0], routePath[1][1]
+                    );
+                    
+                    // Create a new icon object with updated rotation
+                    const updatedIcon = { ...carIcon, rotation: heading };
+                    carMarker.setIcon(updatedIcon);
+                }
+                
+                map.setCenter({ lat: routePath[0][0], lng: routePath[0][1] });
+                document.getElementById('status').textContent = 'Animation reset to start position';
+            } catch (error) {
+                console.error('Error resetting animation:', error);
+                document.getElementById('status').textContent = 'Error resetting animation: ' + error.message;
+            }
+        }
+            
+        // Update the animation speed
+        function changeSpeed() {
+            animationSpeed = parseInt(document.getElementById('speed').value);
+            document.getElementById('speed-value').textContent = animationSpeed;
+            document.getElementById('current-speed').innerHTML = `<strong>Animation Speed:</strong> ${animationSpeed}`;
+        }
+            
+        // Calculate heading between two points
+        function calculateHeading(lat1, lng1, lat2, lng2) {
+            try {
+                return google.maps.geometry.spherical.computeHeading(
+                    new google.maps.LatLng(lat1, lng1),
+                    new google.maps.LatLng(lat2, lng2)
+                );
+            } catch (error) {
+                console.error('Error calculating heading:', error);
+                return 0;
+            }
+        }
+            
+        // Animate the car along the route
+        function animateCar() {
+            try {
+                if (currentStep >= routePath.length - 1) {
+                    cancelAnimationFrame(animationId);
+                    animationId = null;
+                    document.getElementById('start-animation').textContent = 'Start Animation';
+                    document.getElementById('status').textContent = 'Animation complete';
+                    return;
+                }
+                
+                // Move to next step
+                currentStep += animationSpeed / 500;
+                currentStep = Math.min(currentStep, routePath.length - 1);
+                
+                // Calculate position at current step
+                const idx = Math.floor(currentStep);
+                const nextIdx = Math.min(idx + 1, routePath.length - 1);
+                const fraction = currentStep - idx;
+                
+                const lat = routePath[idx][0] + fraction * (routePath[nextIdx][0] - routePath[idx][0]);
+                const lng = routePath[idx][1] + fraction * (routePath[nextIdx][1] - routePath[idx][1]);
+                
+                // Update car position
+                const newPosition = { lat, lng };
+                carMarker.setPosition(newPosition);
+                
+                // Update car heading/rotation
+                if (nextIdx > idx) {
+                    const heading = calculateHeading(
+                        routePath[idx][0], routePath[idx][1],
+                        routePath[nextIdx][0], routePath[nextIdx][1]
+                    );
+                    
+                    // Create a new icon object with updated rotation
+                    const updatedIcon = { ...carIcon, rotation: heading };
+                    carMarker.setIcon(updatedIcon);
+                }
+                
+                // Center the map on the car
+                map.setCenter(newPosition);
+                
+                // Continue animation
+                animationId = requestAnimationFrame(animateCar);
+                
+            } catch (error) {
+                console.error('Error in animation:', error);
+                document.getElementById('status').textContent = 'Animation error: ' + error.message;
+                
+                // Stop animation on error
+                if (animationId) {
+                    cancelAnimationFrame(animationId);
+                    animationId = null;
+                }
+            }
+        }
+            
+        // Make initMap function globally available for Google Maps API callback
+        window.initMap = initMap;
+    </script>
+</body>
+</html>
